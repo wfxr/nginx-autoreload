@@ -6,14 +6,14 @@
 ################################################################################
 
 conf=/etc/nginx/nginx.conf
-oldcksum=$(cksum "$conf")
 
-inotifywait -e modify,move,create,delete -m --timefmt '+%Y/%m/%d %T' --format '%T' "$conf" |
-    while read -r date time; do
-        newcksum=$(cksum "$conf")
-        if [ "$newcksum" != "$oldcksum" ]; then
-            echo "${time} ${date} [$0] nginx.conf update detected."
-            oldcksum=$newcksum
-            nginx -t && nginx -s reload
-        fi
+sum=$(cksum "$conf")
+while true; do
+    newsum=$(cksum "$conf")
+    if [ "$newsum" != "$sum" ]; then
+        echo "$(date '+%Y/%m/%d %T') [$0] nginx.conf update detected."
+        sum=$newsum
+        nginx -t && nginx -s reload
+    fi
+    sleep 3
 done
